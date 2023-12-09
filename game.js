@@ -16,25 +16,31 @@ var level = 0;
 // variable to start game: 
 var started = false;
 
-// check if game started: 
-$(document).keypress(function(event){
+// block user from clicking when the game is doing the sequence:
+var blockUser = true;
+
+// detect when the button "Start game" is pressed:
+$(".startGame").on("click", function(){
     
-    if (event.key == "Enter") {
-        if (!started) {
-            // remove red background:
-            $("html").removeClass("game-over");
-            $("body").removeClass("game-over");
+    // if the game hasn't started yet:
+    if (!started) {
+        // remove red background:
+        $("html").removeClass("game-over");
+        $("body").removeClass("game-over");
 
-            // set motivation paragraph:
-            $("#level-subtitle").text("Stay focused!");
+        // hide button "Start game":
+        $(".startGame").css('visibility', 'hidden');
 
-            // game started: 
-            started = true;
-            level = 0;
+        // set motivation paragraph:
+        $("#level-subtitle1").text("Remember the sequence.");
+        $("#level-subtitle2").text("Stay focused!");
 
-            flowOfGame();
-        }
+        // game started: 
+        started = true;
+        level = 0;
+        flowOfGame();
     }
+    
 
 });
 
@@ -49,7 +55,7 @@ function flowOfGame() {
 }
 
 // next color in sequence: 
-function nextSequence() {
+async function nextSequence() {
     // increase level and update h1: 
     level++;
     $("#level-title").text("Level " + level);
@@ -63,25 +69,40 @@ function nextSequence() {
     // add this color to the pattern: 
     gamePattern.push(randomChosenColour);
 
-    // flash the button of this color: 
-    $("#" + randomChosenColour).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
+    // delay:
+    var delay = 500;
+    
+    // block user for now so user can't click on buttons while the sequence is playing:
+    blockUser = true;
 
-    // play sound of this color: 
-    playSound(randomChosenColour);
+    // play sequence:
+    for (let i=0; i < gamePattern.length; i++) {
+        var currentColor = gamePattern[i];
+        $("#" + currentColor).fadeOut(100).fadeIn(100);
+
+        // play sound of this color: 
+        playSound(currentColor);
+
+        // wait:
+        await sleep(delay)
+    }
+
+    // unblock user:
+    blockUser = false;
 }
-
 
 // detect which button was clicked:
 $(".btn").on("click", function() {
-    numberOfClicks++;
+    if (!blockUser) {
+        numberOfClicks++;
 
-    // color:
-    var userChosenColour = this.id;
-    console.log(userChosenColour);
-    userClickedPattern.push(userChosenColour);
-    playSound(userChosenColour);
-    animatePress(userChosenColour);
-    checkAnswer(userClickedPattern);
+        // color:
+        var userChosenColour = this.id;
+        userClickedPattern.push(userChosenColour);
+        playSound(userChosenColour);
+        animatePress(userChosenColour);
+        checkAnswer(userClickedPattern);
+    }
 });
 
 // check if the answer is correct: 
@@ -96,9 +117,13 @@ function checkAnswer(userClickedPattern) {
             $("html").addClass("game-over");
             $("body").addClass("game-over");
 
-            // set title and subtitle:
+            // hide button "Start game":
+            $(".startGame").css('visibility', 'visible');
+
+            // set title and subtitles:
             $("#level-title").text("Game over!");
-            $("#level-subtitle").text("You failed at repeating the sequence! Press Enter to Start.");
+            $("#level-subtitle1").text("You failed!");
+            $("#level-subtitle2").text("Play again.");
 
             // game over, stop game:
             gamePattern = []
@@ -125,3 +150,8 @@ function animatePress(currentColour) {
         $("#" + currentColour).removeClass("pressed");
     }, 100);
 }
+
+// to sleep:
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+ }
