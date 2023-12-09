@@ -10,6 +10,9 @@ var userClickedPattern = [];
 // number of clicks: 
 var numberOfClicks = 0;
 
+// delay:
+var delay = 800;
+
 // level: 
 var level = 0;
 
@@ -24,27 +27,28 @@ $(".startGame").on("click", function(){
     
     // if the game hasn't started yet:
     if (!started) {
-        // remove red background:
+        // reset title:
+        $("#level-title").text("Simon Game");
+
+        // set motivation paragraph:
+        $("#level-subtitle3").text("Let's play!");
+
+        // remove game-over background:
         $("html").removeClass("game-over");
         $("body").removeClass("game-over");
 
         // hide button "Start game":
         $(".startGame").css('visibility', 'hidden');
 
-        // set motivation paragraph:
-        $("#level-subtitle1").text("Remember the sequence.");
-        $("#level-subtitle2").text("Stay focused!");
-
         // game started: 
         started = true;
-        level = 0;
+        
+        // go to level 1:
         flowOfGame();
     }
-    
-
 });
 
-// flow of the game:
+// flow of the game. This is where levels go up:
 function flowOfGame() {
     // get next color in sequence with delay to make it easier for the user to see:
     setTimeout(nextSequence, 1000);
@@ -59,6 +63,7 @@ async function nextSequence() {
     // increase level and update h1: 
     level++;
     $("#level-title").text("Level " + level);
+    $("#level-subtitle3").text("See sequence:");
 
     // get random number between 0 and 3 to determine the next color in the sequence 
     var randomNumber = Math.floor(Math.random() * 4);
@@ -69,8 +74,8 @@ async function nextSequence() {
     // add this color to the pattern: 
     gamePattern.push(randomChosenColour);
 
-    // delay:
-    var delay = 500;
+    // wait between level and color so user has time to process information:
+    await sleep(delay)
     
     // block user for now so user can't click on buttons while the sequence is playing:
     blockUser = true;
@@ -83,57 +88,79 @@ async function nextSequence() {
         // play sound of this color: 
         playSound(currentColor);
 
-        // wait:
+        // wait between colors:
         await sleep(delay)
     }
 
-    // unblock user:
+    // the sequence was played. unblock user so now user can touch the buttons:
     blockUser = false;
+
+    // give indication of the number of clicks:
+    $("#level-subtitle3").text("Clicks: " + numberOfClicks + "/" + level);
 }
 
 // detect which button was clicked:
 $(".btn").on("click", function() {
     if (!blockUser) {
+        // update number of clicks every time the user clicks on a button:
         numberOfClicks++;
+        $("#level-subtitle3").text("Clicks: " + numberOfClicks + "/" + level);
 
-        // color:
+        // chosen color:
         var userChosenColour = this.id;
+
+        // add the color to the pattern:
         userClickedPattern.push(userChosenColour);
+
+        // play sound and flash button:
         playSound(userChosenColour);
         animatePress(userChosenColour);
+
+        // check answer:
         checkAnswer(userClickedPattern);
+
+        // check if user reached end of level:
+        endOfLevel();
     }
 });
 
+// reached end of level. Up with level:
+async function endOfLevel() {
+    if (userClickedPattern.length == gamePattern.length) {
+        // reached end of level:
+        await sleep(delay/2)
+        $("#level-subtitle3").text("Good!");
+        await sleep(delay/2);
+
+        // continue to next level:
+        flowOfGame();
+    }
+}
+
 // check if the answer is correct: 
-function checkAnswer(userClickedPattern) {
+async function checkAnswer(userClickedPattern) {
     
     // check all click of the user:
     for (let i = 0; i <= numberOfClicks-1; i++) {
         
         if (userClickedPattern[i] != gamePattern[i]) {
-            // WRONG! play sound, change background:
+            // WRONG! play sound, change to game-over background:
             playSound("wrong");
             $("html").addClass("game-over");
             $("body").addClass("game-over");
 
-            // hide button "Start game":
+            // show button "Start game":
             $(".startGame").css('visibility', 'visible');
 
-            // set title and subtitles:
-            $("#level-title").text("Game over!");
-            $("#level-subtitle1").text("You failed!");
-            $("#level-subtitle2").text("Play again.");
+            // set title and subtitle:
+            $("#level-title").text("GAME OVER! Level " + level);
+            $("#level-subtitle3").text("Play again.");
 
-            // game over, stop game:
-            gamePattern = []
+            // game over, stop game and reset variables:
             started = false;
+            gamePattern = []
+            level = 0;
         }
-    }
-
-    // reached end of level. Up with level:
-    if (userClickedPattern.length == gamePattern.length) {
-        flowOfGame();
     }
 }
 

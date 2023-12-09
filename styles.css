@@ -10,15 +10,17 @@ body {
   color: #FEF2BF;
 }
 
-#level-subtitle1, #level-subtitle2 {
-  font-family: 'Press Start 2P', cursive;
+#level-subtitle1, #level-subtitle2, #level-subtitle3 {
   font-size: 2rem;
   margin:  5%;
   color: #FEF2BF;
 }
 
+
 .container {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 50%;
   margin: auto;
 
@@ -27,14 +29,14 @@ body {
 .startGame {
   display: inline-block;
   height: 100px;
-  width: 100px;
+  width: 150px;
   border: 10px solid black;
   border-radius: 20%;
   font-size: large;
 }
 
 .btn {
-  margin: 25px;
+  margin: 5px;
   display: inline-block;
   height: 200px;
   width: 200px;
