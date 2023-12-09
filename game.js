@@ -31,7 +31,7 @@ $(".startGame").on("click", function(){
         $("#level-title").text("Simon Game");
 
         // set motivation paragraph:
-        $("#level-subtitle3").text("Let's play!");
+        $("#level-subtitle2").text("Good luck!");
 
         // remove game-over background:
         $("html").removeClass("game-over");
@@ -63,7 +63,7 @@ async function nextSequence() {
     // increase level and update h1: 
     level++;
     $("#level-title").text("Level " + level);
-    $("#level-subtitle3").text("See sequence:");
+    $("#level-subtitle2").text("See sequence:");
 
     // get random number between 0 and 3 to determine the next color in the sequence 
     var randomNumber = Math.floor(Math.random() * 4);
@@ -96,7 +96,7 @@ async function nextSequence() {
     blockUser = false;
 
     // give indication of the number of clicks:
-    $("#level-subtitle3").text("Clicks: " + numberOfClicks + "/" + level);
+    $("#level-subtitle2").text("Clicks: " + numberOfClicks + "/" + level);
 }
 
 // detect which button was clicked:
@@ -104,7 +104,7 @@ $(".btn").on("click", function() {
     if (!blockUser) {
         // update number of clicks every time the user clicks on a button:
         numberOfClicks++;
-        $("#level-subtitle3").text("Clicks: " + numberOfClicks + "/" + level);
+        $("#level-subtitle2").text("Clicks: " + numberOfClicks + "/" + level);
 
         // chosen color:
         var userChosenColour = this.id;
@@ -127,9 +127,12 @@ $(".btn").on("click", function() {
 // reached end of level. Up with level:
 async function endOfLevel() {
     if (userClickedPattern.length == gamePattern.length) {
+        // block user for now:
+        blockUser = true;
+
         // reached end of level:
         await sleep(delay/2)
-        $("#level-subtitle3").text("Good!");
+        $("#level-subtitle2").text("Good!");
         await sleep(delay/2);
 
         // continue to next level:
@@ -153,8 +156,8 @@ async function checkAnswer(userClickedPattern) {
             $(".startGame").css('visibility', 'visible');
 
             // set title and subtitle:
-            $("#level-title").text("GAME OVER! Level " + level);
-            $("#level-subtitle3").text("Play again.");
+            $("#level-title").text("Level " + level);
+            $("#level-subtitle2").text("GAME OVER!");
 
             // game over, stop game and reset variables:
             started = false;
